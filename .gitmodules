@@ -1,0 +1,3 @@
+[submodule "FB-Message-Parser"]
+	path = FB-Message-Parser
+	url = https://github.com/CopOnTheRun/FB-Message-Parser
