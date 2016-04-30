@@ -1,0 +1,72 @@
+---
+title: "Untitled"
+author: "Boaz Sobrado"
+date: "Monday, April 11, 2016"
+output: html_document
+---
+
+It is a truism that we live in the information age, yet on a day to day basis we engage remarkably little with insights on the personal information we create. Sure, Netflix shows you films you want to see, Amazon offers books you want to buy and Facebook shows you pictures of cats with boobs or whatever it is you tend to click on, but explicit purpose of that is to get your money. What aboout using all that data to gain insights on who you are, who your friends are, what you tend to talk about?
+
+A few interesting facts are shown by [WolframAlpha]() & [myPersonality]() but being a geek I decided to dig deeper and look into my Facebook data. To do this I first downloaded my Facebook data ([this]() link shows you how). It comes in an html format, and I started to extract relevant information with [rvest]() when I noticed a python script on [github]() which handily converts it into [JSON format](). After a bit of fiddling (different time formats and timezones can confuse the script) I got it into JSON and using [rjson]() into R.
+
+
+```{r,eval=FALSE}
+#read and fix JSON file
+library(rjson)
+
+msgR<-fromJSON(file = "C:\\Users\\user1\\Desktop\\Life\\RProjects\\facebookMsg\\FB-Message-Parser\\messages.json",)
+msg<-msgR[[1]]
+rm(msgR)
+
+threads<-sapply(msg,function(x) paste(x[[1]], sep ="", collapse = "-"))
+
+
+
+thread<-vector()
+sender<-vector()
+date<-vector()
+message<-vector()
+
+for (i in 1:length(msg)){
+  thread.length<-length(msg[[i]][[2]])
+  for (a in 1:thread.length){
+          thread[length(thread)+1]  <- threads[i]
+         sender[length(sender)+1]   <- msg[[i]][[2]][[a]][[3]]
+         date[length(date)+1]       <- msg[[i]][[2]][[a]][[2]]
+         message[length(message)+1] <- msg[[i]][[2]][[a]][[1]]
+  }
+cat(paste0("thread ",i," involving ", threads[i]," has been completed ,
+           ...its length was ", thread.length, "\n"))
+}
+
+df<-data.frame(thread,sender,date,message)
+rm(message,msg,sender,thread,thread.length,threads, date)
+
+df$date<-as.POSIXct(strptime(df$date,format = "%A, %B %e, %Y at %I:%M%p"))
+
+df$thread<-as.character(df$thread)
+df$sender<-as.character(df$sender)
+df$message<-as.character(df$message)
+
+```
+
+After a bit of cleaning and struggling with encodings the data was ready for analysis. For instance, when do I chat? When did I use Facebook Messenger the most? Who do I chat to the most? How has who I chat to changed over time? What topics do we discuss?
+
+
+```{r,eval=F}
+#read and fix JSON file
+library(lubridate)
+library(ggplot2)
+
+years<-2016
+
+z<-df %>%
+  filter(is.null(years) | year(date) %in% years) %>% select(date)
+
+x<-data.frame(time = strptime(paste0("2016-04-09 ",strftime(z$date,format = "%T")),format ="%Y-%m-%d %H:%M:%S" ))
+
+ggplot(data=x, aes(x=time)) +
+  geom_bar(stat="count")+
+  theme(legend.position="none")
+```
+
