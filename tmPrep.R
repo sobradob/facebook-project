@@ -1,7 +1,7 @@
 #Cluster analysis
 
 #first step, try text categorisation
-install.packages("textcat")
+#install.packages("textcat")
 library(textcat)
 library(dplyr)
 library(ggplot2)
@@ -18,13 +18,12 @@ lang.m<-select(df,thread,language) %>% group_by(thread,language) %>% summarise(c
 
 df<-merge(df,lang.m,all.x = T,by = "thread")
 df<-df[,-6]
-colnames(df)[6]<-"language"
-df<-df[,-7]
+colnames(df)[6:7]<-c("language","thread_length")
 
 df<-df %>% filter(language == "hungarian" |
               language == "english" |
               language == "spanish" |
-              language == "german")
+              language == "german")#4k messages lost
 
 ggplot(data = df, aes(x= language))+geom_bar(stat="count")#theme stuff is missing
 

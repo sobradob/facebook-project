@@ -3,7 +3,11 @@
 #clean up some variables and add a new column
 library(stringi)
 library(dplyr)
-df$date<-as.POSIXct(strptime(df$date,format = "%A, %B %e, %Y at %I:%M%p"))
+library(ggplot2)
+library(ggthemes)
+library(plotly)
+
+#df$date<-as.POSIXct(strptime(df$date,format = "%A, %B %e, %Y at %I:%M%p"))
 df$message<-as.character(df$message)
 df$msgLen<-nchar(df$message)
 df$sender<-gsub(pattern = "628590366@facebook.com",replacement = "Boaz Sobrado",x = df$sender)
@@ -117,29 +121,6 @@ ggplot(data=plot, aes(x=day, y=total, group=thread, colour=thread)) +
   geom_line() +
   geom_point()
 
-#total messages sent per month
-
-plot.t<-select(df, date, msgLen, sender) %>%
-  filter(sender == "Boaz Sobrado") %>%
-  mutate(day = as.character(strptime(paste0(strftime(date,format = "%Y-%m"),"-01"),format = "%F")))%>%
-  group_by(day) %>% summarise(total = sum(msgLen))
-
-plot.t$sender<-"Sent"
-
-plot.t2<-select(df, date, msgLen, sender) %>%
-  filter(sender != "Boaz Sobrado") %>%
-  mutate(day = as.character(strptime(paste0(strftime(date,format = "%Y-%m"),"-01"),format = "%F")))%>%
-  group_by(day) %>% summarise(total = sum(msgLen))
-
-plot.t2$sender<-"Recieved"
-
-plot.t<-rbind(plot.t, plot.t2)
-
-plot.t$day<-as.Date(plot.t$day)
-
-ggplot(data=plot.t, aes(x=day, y=total, group = sender, colour=sender)) +
-  geom_line() +
-  geom_point()
 
 #create yearly boat race rank plot
 x<-10
@@ -179,17 +160,37 @@ ggplot(data=r2, aes(x=year, y=rank, group = sender, colour=sender)) +
 #what time do I send/recieve messages
 library(lubridate)
 
-years<-2016
+counts<-df %>% select(date) %>% filter(date > "2015-11-01")%>%
+  mutate(rounded_hour  = floor_date(date,unit = "hour"),
+                               rounded_hour2 = strftime(rounded_hour,format = "%T")) %>%
+  group_by(rounded_hour2) %>% summarise(hourly_total = n())
 
-z<-df %>%
-  filter(is.null(years) | year(date) %in% years) %>% select(date)
+ggplot(data=counts, aes(x=rounded_hour2, y=hourly_total)) +
+  geom_bar(width=0.25, fill="#6a9fb5", stat="identity")+theme_tufte(base_size=14, ticks=F)+  theme(axis.title=element_blank())  + 
+  geom_hline(yintercept=seq(1, max(counts$hourly_total), 500), col="white", lwd=1)+
+  annotate("text", x = 5, y = max(counts$hourly_total)*0.75, adj=1,  family="serif",
+           label = c("Total messages sent and recieved
+          by hour\n(November 2015-April 2016)"))
 
-x<-data.frame(time = strptime(paste0("2016-04-09 ",strftime(z$date,format = "%T")),format ="%Y-%m-%d %H:%M:%S" ))
 
-ggplot(data=x, aes(x=time)) +
-  geom_bar(stat="count")
 
-df$thread<-as.character(df$thread)
+#monthly message sending
+
+counts_monthly<-df %>% select(date) %>% filter(date > "2010-01-01" & date <"2015-12-31")%>%
+  mutate(rounded  = floor_date(date,unit = "month")) %>%
+  group_by(rounded) %>% summarise(total = n())
+
+ggplot(data=counts_monthly, aes(x=rounded, y=total)) +
+  geom_bar(fill="#6a9fb5", stat="identity")+theme_tufte(base_size=14, ticks=F)+  theme(axis.title=element_blank())  + 
+  geom_hline(yintercept=seq(1, max(counts_monthly$total), 2500), col="white", lwd=1)+ 
+  scale_x_datetime(breaks=date_breaks("12 months"), labels=date_format("%Y"))
+
+
+annotate("text", x = 2010, y = 10, adj=1,  family="serif",
+           label = c("Total messages sent and recieved
+                     by hour\n(November 2015-April 2016)"))
+
+
 
 #who sends more messages, me or them
 df1<-df[df$thread %in% topThreads$Var1,]
