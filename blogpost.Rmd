@@ -85,32 +85,37 @@ df<-df %>% filter(language == "hungarian" |
 
 ```
 
-In addition, I thought I would classify the messages whether they were sent by a male or a female. Luckily, R provided me with a [package for this too](https://github.com/ropensci/gender).
+In addition, I thought I would classify the messages whether they were sent by a male or a female. Luckily, R provided me with a [package for this too](https://github.com/ropensci/gender). I used this [Tuftean]() website to inspire my plots and [Plotly]() to make them extra-fancy. If you want to see more of how I did it check out my [Github]().
 
 ##Results (interesting stuff?)
-After a bit of cleaning and struggling with encodings the data was ready for analysis. For instance, when do I chat? When did I use Facebook Messenger the most? Who do I chat to the most? How has who I chat to changed over time? What topics do we discuss?
+After a bit of cleaning and struggling with encodings the data was ready for analysis. The first thing that became clear was the sheer volume of the messages sent and received. To put this into perspective I downloaded a few books from [Project Gutenberg]()(using [Gutenbergr]()) and compared them to my own Facebook opus.
 
+IMAGE
 
-```{r,eval=F}
-#read and fix JSON file
-library(lubridate)
-library(ggplot2)
+What would the world come to if we spent all that time we spend on Facebook messenger writing novels? Of course, it is senseless to compare Plato's Republic with my teenage lol's, but damn I sent loads of messages. Given that I sent very few of these to myself, it seems to confirm that social media is indeed social.
 
-years<-2016
+When do I send these messages? I admittedly what I first wanted to see if there are individuals whom I message almost exclusively at certain times of the night. But then I realised the fact I've travelled a lot has confused Facebook's understanding of what time different message's were sent, moreover it would be imprudent to share that information in a blogpost.
 
-z<-df %>%
-  filter(is.null(years) | year(date) %in% years) %>% select(date)
+So instead I looked at when I send messages during the day since I got to the Americas. I'm least likely to be messaging at around 4,5am and most likely to be messaging after breakfast and before dinner. 
 
-x<-data.frame(time = strptime(paste0("2016-04-09 ",strftime(z$date,format = "%T")),format ="%Y-%m-%d %H:%M:%S" ))
+IMAGE
 
-ggplot(data=x, aes(x=time)) +
-  geom_bar(stat="count")+
-  theme(legend.position="none")
-```
+What time of the day messages are sent and received is only one aspect of analysing the flow of messages over time. With the rise of [Whatsapp]() and other messaging apps Facebook messanger might be slowly becoming useless. After all, who uses MSN Messenger nowdays? Looking back at how my use of Facebook messaging since I started using it seems discredit this.
 
-###when do I send messages in time?
+PLOTLY
 
-###Who is more chatty, girls or boys? messages sent and message length
+While the peaks are for the most part related to my love affairs, the minimums are a little harder to explain with the notable exception of August 2015, where the Chinese firewall stopped me from sending too many messages. I expect my month-long stay in Cuba will leave a similar dent.
 
-###how has who I speak to over facebook changed over time?
+Most polyglots will be familiar with the suffering that messaging in multiple languages entails. There is a big difference between "año" and "ano". If you don't believe me, I encourage you to search for images of "ano" on google. A useful question for me would be, what languages do I actually use to message others? 
 
+IMAGE
+
+Based on this I predominantly write in Hungarian, followed by English, and a minimum amount of Spanish and German. I recently started reading more in Spanish, perhaps its time to get my Goethe out and read some German, lest I completely forget the language.
+
+Anther question of interest to me was whether I use different words to talk to  girls than I use to talk to boys. It turns out I do (slightly). Here is what I am more likely to say to boys, with word size indicating Chi-square overrepresentation.
+
+IMAGE
+
+So the stereotypes are true. I swear more when talking to other men, I talk about "sex","money", "models", "cars" and "free" "shit". Funnily enough, the most overrepresented words are related to the amateur chess I play through Facebook chat("fbchess","Sam","Oliver","move","black","white"). Before you judge me for being a knuckle-dragging walking male stereotype, I encourage you to read [this paper](). What I say to girls is not nearly as interesting, partly because I the gender classifying algorithm I used wasn't very effective and partly because the girls I message the most I talk to in languages other than English. If I make the effort to correcty classify more conversations the results would be potentially more interesting. 
+
+In conclusion, this excercize has been useful as a lesson about the amazing powers of [R]() but also a way to find out about our own personal development. 

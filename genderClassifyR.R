@@ -36,3 +36,12 @@ df %>% filter(sender != "Boaz Sobrado" & language == "english") %>%
   select(msgLen,gender) %>% group_by(gender) %>%
   summarise(meanLen = mean(msgLen),
             total_S = n())
+
+#the other participant's gender
+gender.m<-select(df,thread,gender) %>% group_by(thread,gender) %>% summarise(count = n()) %>%
+  top_n(1)
+
+df<-merge(df,gender.m,all.x = T,by = "thread")
+colnames(df)[9:10]<-c("g_sender","g_other")
+
+
